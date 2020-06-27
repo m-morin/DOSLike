@@ -1,0 +1,9 @@
+*
+!*/
+!*.asm
+!*.inc
+!*.md
+!*.pcx
+!*.xcf
+!.gitignore
+!levels/*.*
