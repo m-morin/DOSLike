@@ -3,11 +3,12 @@ MODEL SMALL, PASCAL
 STACK 100h
 P386
 
-VIDMEM=         0B800h
-
 DATASEG
-font:
+font=$
 include "font.inc"
+
+VIDMEM          equ     0B800h
+
 
 CODESEG
 PROC main
@@ -17,8 +18,8 @@ PROC main
                 mov     es,ax
                 call    set_font
                 ;wait for key
-                xor     ax,ax
-                int     16h
+                ;xor     ax,ax
+                ;int     16h
 @@exit:         mov     ax,04C00h
                 int     21h
 ENDP
@@ -27,11 +28,11 @@ ENDP
 PROC set_font
 USES bp,cx,dx,bx,ax
                 mov     bp,offset font
-                mov     cx,128
+                mov     cx,256
                 mov     dx,0
                 mov     bh,14
                 xor     bl,bl
-                mov     ax,01100h
+                mov     ax,01110h
                 int     10h
                 ret
 ENDP
