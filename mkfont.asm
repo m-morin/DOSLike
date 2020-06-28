@@ -15,7 +15,7 @@ nl_str                  db      13,10,'$'
 num                     db      "0??h$"
 scratch                 db      32 dup(?)
 image_data_offset       dw      0
-bytes_written           dw      0
+bytes_written           db      0
 
 TGA_WIDTH               equ     128
 TGA_HEIGHT              equ     224
@@ -141,7 +141,7 @@ __10:                   mov     [byte ptr num+1],ah
 __20:                   mov     [byte ptr num+2],al
                         mov     ah,009h
                         ;first byte on line?
-                        test    [byte ptr bytes_written],007h
+                        cmp     [byte ptr bytes_written],0
                         jnz     __30
                         ;output line prefix
                         mov     dx,offset db_str
@@ -149,11 +149,12 @@ __20:                   mov     [byte ptr num+2],al
 __30:                   ;output byte
                         mov     dx,offset num
                         int     21h
-                        inc     [word ptr bytes_written]
+                        inc     [byte ptr bytes_written]
                         ;output newline or comma
-                        test    [byte ptr bytes_written],007h
                         mov     dx,offset com_str
-                        jnz     __40
+                        cmp     [byte ptr bytes_written],14
+                        jne     __40
+                        mov     [byte ptr bytes_written],0
                         mov     dx,offset nl_str
 __40:                   int     21h
                         ret
