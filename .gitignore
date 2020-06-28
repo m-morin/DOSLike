@@ -3,7 +3,7 @@
 !*.asm
 !*.inc
 !*.md
-!*.pcx
+!*.tga
 !*.xcf
 !.gitignore
 !levels/*.*
