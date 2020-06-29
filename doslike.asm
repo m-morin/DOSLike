@@ -33,10 +33,22 @@ NUM_ENTITIES            equ     64
 ;*********************
 ;*****   Types   *****
 ;*********************
+STRUC SChar
+char                    db      ?
+attributes              db      ?
+ENDS
+
 STRUC Entity
-char                    db ?
-x                       db ?
-y                       db ?
+char                    SChar   ?
+x                       db      ?
+y                       db      ?
+ENDS
+
+TFLAGS_SOLID            equ     0
+TFLAGS_SOLID_MASK       equ     00000001b
+STRUC Tile
+char                    SChar   ?
+flags                   db      ?
 ENDS
 
 
@@ -54,7 +66,7 @@ LABEL font_end
 ;all of this data gets initialized to zero _after_
 ;the font is loaded, so it all must be ? initialized here
 ORG uninit_start
-map                     db      MAP_WIDTH*MAP_HEIGHT*3 dup(?)
+map                     Tile    MAP_WIDTH*MAP_HEIGHT dup(<?>)
 
 LABEL entities_start
 player_entity           Entity  <?>
@@ -101,10 +113,17 @@ PROC main
                         mov     dx,0FFFFh
                         int     10h
                         ;create player
-                        mov     [player_entity.char],'@'
+                        mov     [player_entity.char.char],'@'
+                        mov     [player_entity.char.attributes],00fh
                         mov     [player_entity.x],10
                         mov     [player_entity.y],3
+                        ;create wall
+                        mov     di,offset map
+                        mov     [(Tile ptr di).char.char],'#'
+                        mov     [(Tile ptr di).char.attributes],00fh
+                        mov     [(Tile ptr di).flags],1 SHL TFLAGS_SOLID
 __loop:                 call    clear_screen
+                        call    draw_map
                         call    draw_entities
                         ;wait for key
                         xor     ax,ax
@@ -126,6 +145,23 @@ __exit:                 ;reset font
 ENDP main
 
 
+;***** Draws the map *****
+PROC draw_map
+USES si,di,ax,cx
+                        mov     ax,VGA_MEM
+                        mov     es,ax
+                        mov     si,offset map
+                        xor     di,di
+                        mov     cx,MAP_WIDTH*MAP_HEIGHT
+__10:                   mov     ax,[word ptr (Entity si).char]
+                        mov     [word ptr es:di],ax
+                        add     si,size Tile
+                        add     di,2
+                        loop    __10
+                        ret
+ENDP draw_map
+
+
 ;***** Draws all entities *****
 PROC draw_entities
 USES ax,si,di,es
@@ -133,7 +169,7 @@ USES ax,si,di,es
                         mov     es,ax
                         ;iterate over entities
                         mov     si,offset entities_start
-__10:                   cmp     [(Entity si).char],0
+__10:                   cmp     [(Entity si).char.char],0
                         je      __20
                         ;di=y*SCREEN_WIDTH*2
                         movzx   ax,[(Entity si).y]
@@ -146,8 +182,8 @@ __10:                   cmp     [(Entity si).char],0
                         shl     ax,1
                         add     di,ax
                         ;draw character
-                        mov     al,[(Entity si).char]
-                        mov     [byte ptr es:di],al
+                        mov     ax,[word ptr (Entity si).char]
+                        mov     [word ptr es:di],ax
 __20:                   add     si,size Entity
                         cmp     si,offset entities_end
                         jl      __10
@@ -157,34 +193,57 @@ ENDP draw_entities
 
 ;***** Move the player *****
 PROC move_player
-USES ax
+USES ax,bx,cx,si
+                        movzx   bx,[player_entity.x]
+                        movzx   cx,[player_entity.y]
                         cmp     ah,SCAN_UP
                         jne     __10
-                        dec     [player_entity.y]
+                        dec     cx
                         jmp     __clamp
 __10:                   cmp     ah,SCAN_DOWN
                         jne     __20
-                        inc     [player_entity.y]
+                        inc     cx
                         jmp     __clamp
 __20:                   cmp     ah,SCAN_RIGHT
                         jne     __30
-                        inc     [player_entity.x]
+                        inc     bx
                         jmp     __clamp
 __30:                   cmp     ah,SCAN_LEFT
                         jne     __ret
-                        dec     [player_entity.x]
-__clamp:                cmp     [player_entity.x],0
+                        dec     bx
+__clamp:                cmp     bx,0
                         jge     __40
-                        mov     [player_entity.x],0
-__40:                   cmp     [player_entity.x],MAP_WIDTH
+                        mov     bx,0
+__40:                   cmp     bx,MAP_WIDTH
                         jb      __50
-                        mov     [player_entity.x],MAP_WIDTH-1
-__50:                   cmp     [player_entity.y],0
+                        mov     bx,MAP_WIDTH-1
+__50:                   cmp     cx,0
                         jge     __60
-                        mov     [player_entity.y],0
-__60:                   cmp     [player_entity.y],MAP_HEIGHT
-                        jb      __ret
-                        mov     [player_entity.y],MAP_HEIGHT-1
+                        mov     cx,0
+__60:                   cmp     cx,MAP_HEIGHT
+                        jb      __collide
+                        mov     cx,MAP_HEIGHT-1
+__collide:              push    cx
+                        push    bx
+                        ;si=cx*MAP_WIDTH*size Tile
+                        mov     ax,cx
+                        mov     bx,MAP_WIDTH*size Tile
+                        mul     bx
+                        mov     si,ax
+                        ;si+=dx*size Tile
+                        ;get cached bx
+                        pop     ax
+                        push    ax
+                        mov     bx,size Tile
+                        mul     bx
+                        add     si,ax
+                        pop     bx
+                        pop     cx
+                        ;is that tile walkable?
+                        test    [(Tile ptr si).flags],TFLAGS_SOLID_MASK
+                        jnz     __ret
+                        mov     [player_entity.x],bl
+                        mov     [player_entity.y],cl
 __ret:                  ret
 ENDP move_player
 
