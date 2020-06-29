@@ -36,6 +36,9 @@ ORG font_end
 ENDIF
 
 ;any initialized data must go here
+LABEL palette_start
+include "palette.inc"
+LABEL palette_end
 
 
 ;*********************
@@ -53,6 +56,32 @@ PROC main
                         mov     cx,offset uninit_end - offset uninit_start
                         mov     al,0
                         rep     stosb
+                        ;set palette
+                        mov     dx,003C6h
+                        mov     al,0ffh
+                        out     dx,al
+                        ;initialize palette to white
+                        mov     dx,003C8h
+                        mov     al,0
+                        out     dx,al
+                        mov     dx,003C9h
+                        mov     al,255
+                        mov     cx,256*3
+__3:                    out     dx,al
+                        loop    __3
+                        ;set db16 palette
+                        mov     cx,16
+                        mov     si,offset palette_start
+__5:                    lodsb
+                        mov     dx,003C8h
+                        out     dx,al
+                        mov     dx,003C9h
+                        REPT    3
+                        lodsb
+                        shr     al,2
+                        out     dx,al
+                        ENDM
+                        loop    __5
                         ;disable blink
                         mov     dx,VGA_INPUT_STATUS_0
                         in      al,dx
@@ -71,11 +100,16 @@ PROC main
                         mov     [player_entity.char.attributes],00fh
                         mov     [player_entity.x],10
                         mov     [player_entity.y],3
-                        ;create wall
+                        ;create walls
                         mov     di,offset map
-                        mov     [(Tile ptr di).char.char],'#'
-                        mov     [(Tile ptr di).char.attributes],00fh
+                        mov     cx,0
+__10:                   mov     [(Tile ptr di).char.char],219
+                        mov     [(Tile ptr di).char.attributes],cl
                         mov     [(Tile ptr di).flags],1 SHL TFLAGS_SOLID
+                        add     di,size Tile
+                        inc     cx
+                        cmp     cx,16
+                        jne     __10
 __loop:                 call    screen_clear
                         call    map_draw
                         call    entity_draw_all

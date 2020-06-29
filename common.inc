@@ -71,6 +71,9 @@ GLOBAL player_entity:Entity
 GLOBAL other_entities:Entity:NUM_ENTITIES
 GLOBAL entities_end
 
+GLOBAL palette_start
+GLOBAL palette_end
+
 
 ;*********************
 ;*****    Code   *****

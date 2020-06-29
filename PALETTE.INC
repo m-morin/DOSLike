@@ -1,0 +1,16 @@
+db 000h, 01Ch, 013h, 004h
+db 001h, 07Eh, 053h, 011h
+db 002h, 0C9h, 085h, 01Bh
+db 003h, 0FFh, 0A8h, 022h
+db 004h, 003h, 00Bh, 010h
+db 005h, 007h, 01Dh, 029h
+db 014h, 00Dh, 035h, 04Ch
+db 007h, 013h, 04Eh, 06Fh
+db 038h, 016h, 008h, 007h
+db 039h, 055h, 020h, 01Bh
+db 03Ah, 0A1h, 03Dh, 032h
+db 03Bh, 0D6h, 051h, 043h
+db 03Ch, 005h, 013h, 00Ah
+db 03Dh, 010h, 03Ch, 01Fh
+db 03Eh, 020h, 078h, 03Dh
+db 03Fh, 02Ch, 0A4h, 054h
