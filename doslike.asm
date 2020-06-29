@@ -145,6 +145,26 @@ __exit:                 ;reset font
 ENDP main
 
 
+;***** Converts x,y to map pointer *****
+;Parameters: bl=x,bh=y
+;Returns:    si=pointer
+PROC map_xy_to_ptr
+USES ax,cx,dx
+                        mov     si,offset map
+                        ;si+=y*MAP_WIDTH*size Tile
+                        movzx   ax,bh
+                        mov     cx,MAP_WIDTH*size Tile
+                        mul     cx
+                        add     si,ax
+                        ;si+=x*size Tile
+                        movzx   ax,bl
+                        mov     cx,size Tile
+                        mul     cx
+                        add     si,ax
+                        ret
+ENDP
+
+
 ;***** Draws the map *****
 PROC draw_map
 USES si,di,ax,cx
@@ -194,56 +214,41 @@ ENDP draw_entities
 ;***** Move the player *****
 PROC move_player
 USES ax,bx,cx,si
-                        movzx   bx,[player_entity.x]
-                        movzx   cx,[player_entity.y]
+                        mov     bl,[player_entity.x]
+                        mov     bh,[player_entity.y]
                         cmp     ah,SCAN_UP
                         jne     __10
-                        dec     cx
-                        jmp     __clamp
+                        ;move up unless already at 0
+                        cmp     bh,0
+                        je      __ret
+                        dec     bh
+                        jmp     __collide
 __10:                   cmp     ah,SCAN_DOWN
                         jne     __20
-                        inc     cx
-                        jmp     __clamp
+                        ;move down unless already at MAP_HEIGHT-1
+                        cmp     bh,MAP_HEIGHT-1
+                        jge     __ret
+                        inc     bh
+                        jmp     __collide
 __20:                   cmp     ah,SCAN_RIGHT
                         jne     __30
-                        inc     bx
-                        jmp     __clamp
+                        ;move right unless already at MAP_WIDTH-1
+                        cmp     bl,MAP_WIDTH-1
+                        jge     __ret
+                        inc     bl
+                        jmp     __collide
 __30:                   cmp     ah,SCAN_LEFT
                         jne     __ret
-                        dec     bx
-__clamp:                cmp     bx,0
-                        jge     __40
-                        mov     bx,0
-__40:                   cmp     bx,MAP_WIDTH
-                        jb      __50
-                        mov     bx,MAP_WIDTH-1
-__50:                   cmp     cx,0
-                        jge     __60
-                        mov     cx,0
-__60:                   cmp     cx,MAP_HEIGHT
-                        jb      __collide
-                        mov     cx,MAP_HEIGHT-1
-__collide:              push    cx
-                        push    bx
-                        ;si=cx*MAP_WIDTH*size Tile
-                        mov     ax,cx
-                        mov     bx,MAP_WIDTH*size Tile
-                        mul     bx
-                        mov     si,ax
-                        ;si+=dx*size Tile
-                        ;get cached bx
-                        pop     ax
-                        push    ax
-                        mov     bx,size Tile
-                        mul     bx
-                        add     si,ax
-                        pop     bx
-                        pop     cx
-                        ;is that tile walkable?
+                        ;move left unless already at 0
+                        cmp     bl,0
+                        je      __collide
+                        dec     bl
+__collide:              ;is that tile walkable?
+                        call    map_xy_to_ptr
                         test    [(Tile ptr si).flags],TFLAGS_SOLID_MASK
                         jnz     __ret
                         mov     [player_entity.x],bl
-                        mov     [player_entity.y],cl
+                        mov     [player_entity.y],bh
 __ret:                  ret
 ENDP move_player
 
