@@ -1,9 +1,6 @@
-*
-!*/
-!*.asm
-!*.inc
-!*.md
-!*.tga
-!*.xcf
-!.gitignore
-!levels/*.*
+*.EXE
+*.MAP
+*.TR
+*.LST
+*.OBJ
+*.TD
