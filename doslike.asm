@@ -44,12 +44,32 @@ ENDS
 ;*****    Data   *****
 ;*********************
 DATASEG
-LABEL font
-include "font.inc"
+LABEL uninit_start
 
-map                     db      MAP_WIDTH*MAP_HEIGHT dup(0)
-entities                Entity  NUM_ENTITIES dup(<0,0,0>)
-player_entity           equ     entities
+LABEL font_start
+include "font.inc"
+LABEL font_end
+
+;overlay other data on top of font
+;all of this data gets initialized to zero _after_
+;the font is loaded, so it all must be ? initialized here
+ORG uninit_start
+map                     db      MAP_WIDTH*MAP_HEIGHT*3 dup(?)
+
+LABEL entities_start
+player_entity           Entity  <?>
+other_entities          Entity  NUM_ENTITIES dup(<?>)
+LABEL entities_end
+
+LABEL uninit_end
+
+;move location pointer to end of font if uninit_data was
+;less than the size of the font
+IF uninit_end LT font_end
+ORG font_end
+ENDIF
+
+;any initialized data must go here
 
 
 ;*********************
@@ -63,6 +83,11 @@ PROC main
                         mov     es,ax
                         ;set font and initialize data
                         call    set_font
+                        ;initialize data
+                        mov     di,offset uninit_start
+                        mov     cx,offset uninit_end - offset uninit_start
+                        mov     al,0
+                        rep     stosb
                         ;disable blink
                         mov     dx,VGA_INPUT_STATUS_0
                         in      al,dx
@@ -108,7 +133,7 @@ USES ax,si,di,es
                         mov     ax,VGA_MEM
                         mov     es,ax
                         ;iterate over entities
-                        mov     si,offset entities
+                        mov     si,offset entities_start
 __10:                   cmp     [(Entity si).char],0
                         je      __20
                         ;di=y*SCREEN_WIDTH*2
@@ -125,7 +150,7 @@ __10:                   cmp     [(Entity si).char],0
                         mov     al,[(Entity si).char]
                         mov     [byte ptr es:di],al
 __20:                   add     si,size Entity
-                        cmp     si,offset entities + size entities
+                        cmp     si,offset entities_end
                         jl      __10
                         ret
 ENDP draw_entities
@@ -181,7 +206,7 @@ ENDP clear_screen
 ;***** Sets the custom font *****
 PROC set_font
 USES bp,cx,dx,bx,ax
-                        mov     bp,offset font
+                        mov     bp,offset font_start
                         mov     cx,256
                         mov     dx,0
                         mov     bh,14
