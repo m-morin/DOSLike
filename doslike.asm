@@ -21,7 +21,7 @@ SCAN_UP                 equ     72
 SCAN_DOWN               equ     80
 
 SCREEN_WIDTH            equ     80
-SCREEN_HEIGHT           equ     28
+SCREEN_HEIGHT           equ     50
 
 GFX_PLAYER              equ     '@'
 
@@ -83,7 +83,6 @@ PROC main
                         mov     es,ax
                         ;set font and initialize data
                         call    set_font
-                        ;initialize data
                         mov     di,offset uninit_start
                         mov     cx,offset uninit_end - offset uninit_start
                         mov     al,0
@@ -207,9 +206,9 @@ ENDP clear_screen
 PROC set_font
 USES bp,cx,dx,bx,ax
                         mov     bp,offset font_start
-                        mov     cx,256
+                        mov     cx,128
                         mov     dx,0
-                        mov     bh,14
+                        mov     bh,8
                         xor     bl,bl
                         mov     ax,01110h
                         int     10h

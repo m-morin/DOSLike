@@ -21,7 +21,7 @@ TGA_WIDTH               equ     128
 TGA_HEIGHT              equ     224
 
 FONT_WIDTH              equ     8
-FONT_HEIGHT             equ     14
+FONT_HEIGHT             equ     8
 FONT_CHARS_PER_ROW      equ     16
 
 TGA_ID_FIELD_LENGTH     equ     0
@@ -84,13 +84,9 @@ USES ax,cx,dx
                         ;calculate offset of character
                         movzx   cx,al
                         xor     dx,dx
-                        ;cx=y*1792, FONT_WIDTH * FONT_CHARS_PER_ROW * FONT_HEIGHT
+                        ;cx=y*1024, FONT_WIDTH * FONT_CHARS_PER_ROW * FONT_HEIGHT
                         shr     cx,4
-                        shl     cx,8
-                        add     dx,cx
-                        shl     cx,1
-                        add     dx,cx
-                        shl     cx,1
+                        shl     cx,10
                         add     dx,cx
                         ;cx+=x*FONT_WIDTH+image_data_offset
                         movzx   cx,al
@@ -152,7 +148,7 @@ __30:                   ;output byte
                         inc     [byte ptr bytes_written]
                         ;output newline or comma
                         mov     dx,offset com_str
-                        cmp     [byte ptr bytes_written],14
+                        cmp     [byte ptr bytes_written],FONT_HEIGHT
                         jne     __40
                         mov     [byte ptr bytes_written],0
                         mov     dx,offset nl_str
