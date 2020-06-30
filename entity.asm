@@ -71,7 +71,7 @@ __30:                   cmp     ah,SCAN_LEFT
                         dec     bl
 __collide:              ;is that tile walkable?
                         call    map_xy_to_ptr
-                        test    [(Tile ptr si).flags],TFLAGS_SOLID_MASK
+                        test    [(Tile ptr si).flags],TFLAGS_SOLID
                         jnz     __ret
                         mov     [player_entity.x],bl
                         mov     [player_entity.y],bh

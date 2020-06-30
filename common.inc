@@ -36,20 +36,28 @@ NUM_ENTITIES            equ     64
 STRUC SChar
 char                    db      ?
 attributes              db      ?
-ENDS
+ENDS SChar
 
 STRUC Entity
 char                    SChar   ?
 x                       db      ?
 y                       db      ?
-ENDS
+ENDS Entity
 
-TFLAGS_SOLID            equ     0
-TFLAGS_SOLID_MASK       equ     00000001b
+TFLAGS_SOLID            equ     00000001b
+TFLAGS_OPAQUE           equ     00000010b
+TFLAGS_SEEN             equ     00000100b
 STRUC Tile
 char                    SChar   ?
 flags                   db      ?
-ENDS
+ENDS Tile
+
+STRUC Rect
+top                     db      ?
+bottom                  db      ?
+left                    db      ?
+right                   db      ?
+ENDS Rect
 
 
 ;*********************
@@ -71,6 +79,8 @@ GLOBAL player_entity:Entity
 GLOBAL other_entities:Entity:NUM_ENTITIES
 GLOBAL entities_end
 
+GLOBAL prng:word
+
 GLOBAL palette_start
 GLOBAL palette_end
 
@@ -79,9 +89,17 @@ GLOBAL palette_end
 ;*****    Code   *****
 ;*********************
 CODESEG
+GLOBAL data_init:PROC
+
+GLOBAL util_prng_seed:PROC
+GLOBAL util_rand:PROC
+
 GLOBAL map_xy_to_ptr:PROC
 GLOBAL map_draw:PROC
+GLOBAL map_clear:PROC
+GLOBAL map_generate:PROC
 
+GLOBAL screen_init:PROC
 GLOBAL screen_clear:PROC
 GLOBAL screen_set_font:PROC
 

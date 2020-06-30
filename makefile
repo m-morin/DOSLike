@@ -3,7 +3,7 @@ T=descend
 .asm.obj:
 	tasm/zi/m2/l/t $*
 
-$T.exe: main.obj map.obj screen.obj entity.obj
+$T.exe: main.obj map.obj screen.obj entity.obj data.obj util.obj
 	tlink/v $**,$T.exe
 run: $T.exe
 	$T.exe
