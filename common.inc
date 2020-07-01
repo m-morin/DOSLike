@@ -48,7 +48,8 @@ TFLAGS_SOLID            equ     00000001b
 TFLAGS_OPAQUE           equ     00000010b
 TFLAGS_SEEN             equ     00000100b
 STRUC Tile
-char                    SChar   ?
+char                    db      ?
+attributes              db      ?
 flags                   db      ?
 ENDS Tile
 
@@ -96,6 +97,7 @@ GLOBAL util_rand:PROC
 
 GLOBAL map_xy_to_ptr:PROC
 GLOBAL map_draw:PROC
+GLOBAL map_draw_room:PROC
 GLOBAL map_clear:PROC
 GLOBAL map_generate:PROC
 

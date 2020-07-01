@@ -6,6 +6,9 @@ P386
 
 include "common.inc"
 
+DATASEG
+test_rect		Rect	<10,20,10,30>
+
 CODESEG
 PROC main
                         ;set up data segment
@@ -18,11 +21,14 @@ PROC main
                         call    data_init
                         call    map_clear
 			call	util_prng_seed
+			;draw test room
+			mov	di,offset test_rect
+			call	map_draw_room
                         ;create player
                         mov     [player_entity.char.char],'@'
                         mov     [player_entity.char.attributes],00fh
-                        mov     [player_entity.x],10
-                        mov     [player_entity.y],3
+                        mov     [player_entity.x],15
+                        mov     [player_entity.y],15
 __loop:                 call    screen_clear
                         call    map_draw
                         call    entity_draw_all
@@ -40,8 +46,5 @@ __exit:                 ;reset screen
                         mov     ax,04C00h
                         int     21h
 ENDP main
-
-
-
 
 END main
