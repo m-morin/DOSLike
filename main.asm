@@ -7,7 +7,7 @@ P386
 include "common.inc"
 
 DATASEG
-test_rect		Rect	<10,20,10,30>
+test_rect               Rect    <10,20,10,30>
 
 CODESEG
 PROC main
@@ -22,8 +22,8 @@ PROC main
                         call    map_clear
 			call	util_prng_seed
 			;draw test room
-			mov	di,offset test_rect
-			call	map_draw_room
+			mov     di,offset test_rect
+			call    map_draw_room
                         ;create player
                         mov     [player_entity.char.char],'@'
                         mov     [player_entity.char.attributes],00fh

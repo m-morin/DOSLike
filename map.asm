@@ -7,7 +7,7 @@ P386
 include "common.inc"
 
 DATASEG
-map_floor		Tile	<'.',004h,0>
+map_floor               Tile  <'.',004h,0>
 
 CODESEG
 ;***** Converts x,y to map pointer *****
@@ -46,25 +46,25 @@ ENDP map_clear
 
 
 ;***** Draws a room *****
-;Parameters:	di=ptr to Rect
+;Parameters:  di=ptr to Rect
 PROC map_draw_room
 USES ax,bx,si,cx
-			;cache floor tile in registers
-			mov	ax,[word ptr map_floor.char]
-			mov	ch,[map_floor.flags]
-			mov  	bh,[(Rect ptr di).top]
-__10:			mov	bl,[(Rect ptr di).left]
-			call	map_xy_to_ptr
-__20:			mov	[word ptr (Tile ptr si).char],ax
-			mov	[(Tile ptr si).flags],ch
-			add	si,size Tile
-			inc	bl
-			cmp	bl,[(Rect ptr di).right]
-			jne	__20
-			inc	bh
-			cmp	bh,[(Rect ptr di).bottom]
-			jne	__10
-			ret
+                        ;cache floor tile in registers
+                        mov     ax,[word ptr map_floor.char]
+                        mov     ch,[map_floor.flags]
+                        mov     bh,[(Rect ptr di).top]
+__10:                   mov     bl,[(Rect ptr di).left]
+                        call    map_xy_to_ptr
+__20:                   mov     [word ptr (Tile ptr si).char],ax
+                        mov     [(Tile ptr si).flags],ch
+                        add     si,size Tile
+                        inc     bl
+                        cmp     bl,[(Rect ptr di).right]
+                        jne     __20
+                        inc     bh
+                        cmp     bh,[(Rect ptr di).bottom]
+                        jne     __10
+                        ret
 ENDP map_draw_room
 
 
