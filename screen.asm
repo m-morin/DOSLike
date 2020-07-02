@@ -35,14 +35,16 @@ __5:                    lodsb
                         ENDM
                         loop    __5
                         ;disable blink
-			;This breaks Windows XP DOS mode
-                        ;mov     dx,VGA_INPUT_STATUS_0
-                        ;in      al,dx
-                        ;mov     dx,VGA_ATC_REGISTER
-                        ;mov     al,VGA_ATC_MODE
-                        ;out     dx,al
-                        ;mov     al,0
-                        ;out     dx,al
+                        mov     dx,003DAh
+                        in      al,dx
+                        mov     dx,003C0h
+                        mov     al,030h
+                        out     dx,al
+                        inc     dx
+                        in      al,dx
+                        and     al,0F7h
+                        dec     dx
+                        out     dx,al
                         ;hide cursor
                         mov     ah,002h
                         mov     bh,0
