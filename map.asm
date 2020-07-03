@@ -76,33 +76,28 @@ ENDP map_draw_room
 ;
 ;Total rects is 2^(BSP_LEVELS-1)-1. At 3 levels, this
 ;is 7 rects, or 28 bytes.
-BSP_LEVELS              equ     5
+BSP_LEVELS              equ     4
 BSP_RECTBUF_SIZE        equ     ((2 SHL (BSP_LEVELS-1))-1) * size Rect
 BSP_RECTBUF_LASTGEN     equ     (2 SHL (BSP_LEVELS-2)) * size Rect
 PROC map_generate_bsp
 LOCAL rects:byte:BSP_RECTBUF_SIZE
-USES ax,bx,cx,dx,si,di,es,ds
-                        push    es
-                        ;rects are on the stack segment
-                        mov     ax,ss
-                        mov     ds,ax
-                        mov     es,ax
+USES ax,bx,cx,dx,si,di
                         ;si = rects[0]
                         mov     si,bp
                         sub     si,BSP_RECTBUF_SIZE
                         ;rects[0] = whole screen
-                        mov     [(Rect ptr si).top],0
-                        mov     [(Rect ptr si).bottom],MAP_HEIGHT
-                        mov     [(Rect ptr si).left],0
-                        mov     [(Rect ptr si).right],MAP_WIDTH
+                        mov     [(Rect ptr ss:si).top],0
+                        mov     [(Rect ptr ss:si).bottom],MAP_HEIGHT
+                        mov     [(Rect ptr ss:si).left],0
+                        mov     [(Rect ptr ss:si).right],MAP_WIDTH
                         ;di = rects[1]
                         mov     di,si
                         add     di,size Rect
                         ;split the screen rect vertically
-                        ;call    map_generate_bsp_split_vertical
+                        call    map_generate_bsp_split_vertical
                         ;split the two new rects horizontally
-                        ;call    map_generate_bsp_split_horizontal
-                        ;call    map_generate_bsp_split_horizontal
+                        call    map_generate_bsp_split_horizontal
+                        call    map_generate_bsp_split_horizontal
                         ;keep generating rects until we run out of space
 __10:                   call    map_generate_bsp_split
                         cmp     di,bp
@@ -112,15 +107,18 @@ __10:                   call    map_generate_bsp_split
                         ;them onto the map
                         mov     di,bp
                         sub     di,BSP_RECTBUF_LASTGEN
-                        pop     es
-__20:                   inc     [(Rect ptr di).left]
-                        dec     [(Rect ptr di).right]
-                        inc     [(Rect ptr di).top]
-                        dec     [(Rect ptr di).bottom]
+                        push    ds
+                        push    ss
+                        pop     ds
+__20:                   inc     [(Rect ptr ss:di).left]
+                        dec     [(Rect ptr ss:di).right]
+                        inc     [(Rect ptr ss:di).top]
+                        dec     [(Rect ptr ss:di).bottom]
                         call    map_draw_room
                         add     di,size Rect
                         cmp     di,bp
                         jb      __20
+                        pop     ds
                         ret
 ENDP map_generate_bsp
 
@@ -129,41 +127,42 @@ PROC map_generate_bsp_split
                         test    al,1
                         jz      map_generate_bsp_split_vertical
 map_generate_bsp_split_horizontal:
-                        mov     bh,[(Rect ptr si).right]
-                        sub     bh,[(Rect ptr si).left]
+                        mov     bh,[(Rect ptr ss:si).right]
+                        sub     bh,[(Rect ptr ss:si).left]
                         shr     bh,1
-                        add     bh,[(Rect ptr si).left]
+                        add     bh,[(Rect ptr ss:si).left]
+                        call    util_rand
+                        and     ah,00Fh
+                        sub     ah,2
+                        add     bh,ah
                         ;first rect
-                        mov     dx,si
-                        mov     cx,size Rect
-                        rep     movsb
-                        mov     [(Rect ptr di-size Rect).right],bh
+                        mov     eax,[dword ptr ss:si]
+                        mov     [dword ptr ss:di],eax
+                        mov     [(Rect ptr ss:di).right],bh
                         ;second rect
-                        mov     si,dx
-                        mov     cx,size Rect
-                        rep     movsb
-                        mov     [(Rect ptr di-size Rect).left],bh
+                        mov     [dword ptr ss:di+size Rect],eax
+                        mov     [(Rect ptr ss:di+size Rect).left],bh
+                        add     si,size Rect
+                        add     di,size Rect * 2
                         ret
 map_generate_bsp_split_vertical:
-                        mov     bh,[(Rect ptr si).bottom]
-                        sub     bh,[(Rect ptr si).top]
+                        mov     bh,[(Rect ptr ss:si).bottom]
+                        sub     bh,[(Rect ptr ss:si).top]
                         shr     bh,1
-                        add     bh,[(Rect ptr si).top]
-                        ;call    util_rand
-                        ;and     ah,00Fh
-                        ;sub     ah,2
-                        ;add     ah,bh
-                        mov     ah,bh
+                        add     bh,[(Rect ptr ss:si).top]
+                        call    util_rand
+                        and     ah,00Fh
+                        sub     ah,2
+                        add     bh,ah
                         ;first rect
-                        mov     dx,si
-                        mov     cx,size Rect
-                        rep     movsb
-                        mov     [(Rect ptr di-size Rect).bottom],ah
+                        mov     eax,[dword ptr ss:si]
+                        mov     [dword ptr ss:di],eax
+                        mov     [(Rect ptr ss:di).bottom],bh
                         ;second rect
-                        mov     si,dx
-                        mov     cx,size Rect
-                        rep     movsb
-                        mov     [(Rect ptr di-size Rect).top],ah
+                        mov     [dword ptr ss:di+size Rect],eax
+                        mov     [(Rect ptr ss:di+size Rect).top],bh
+                        add     si,size Rect
+                        add     di,size Rect * 2
                         ret
 ENDP map_generate_bsp_split
 
