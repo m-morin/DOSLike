@@ -4,3 +4,4 @@
 *.LST
 *.OBJ
 *.TD
+tmp/*

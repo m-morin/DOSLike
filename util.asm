@@ -18,6 +18,7 @@ ENDP util_prng_seed
 
 ;***** Return a random number *****
 PROC util_rand
+USES bx
                 mov     ax,[word ptr prng]
                 mov     bx,ax
                 shl     bx,7

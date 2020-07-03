@@ -21,9 +21,7 @@ PROC main
                         call    data_init
                         call    map_clear
 			call	util_prng_seed
-			;draw test room
-			mov     di,offset test_rect
-			call    map_draw_room
+                        call    map_generate_bsp
                         ;create player
                         mov     [player_entity.char.char],'@'
                         mov     [player_entity.char.attributes],00fh

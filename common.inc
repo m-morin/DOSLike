@@ -99,7 +99,7 @@ GLOBAL map_xy_to_ptr:PROC
 GLOBAL map_draw:PROC
 GLOBAL map_draw_room:PROC
 GLOBAL map_clear:PROC
-GLOBAL map_generate:PROC
+GLOBAL map_generate_bsp:PROC
 
 GLOBAL screen_init:PROC
 GLOBAL screen_clear:PROC
