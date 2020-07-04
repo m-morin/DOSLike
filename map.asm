@@ -132,7 +132,7 @@ map_generate_bsp_split_horizontal:
                         shr     bh,1
                         add     bh,[(Rect ptr ss:si).left]
                         call    util_rand
-                        and     ah,00Fh
+                        and     ah,003h
                         sub     ah,2
                         add     bh,ah
                         ;first rect
@@ -151,7 +151,7 @@ map_generate_bsp_split_vertical:
                         shr     bh,1
                         add     bh,[(Rect ptr ss:si).top]
                         call    util_rand
-                        and     ah,00Fh
+                        and     ah,003h
                         sub     ah,2
                         add     bh,ah
                         ;first rect
